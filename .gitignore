@@ -1,15 +1,49 @@
+# Android/IntelliJ
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
 local.properties
+*.log
+*.hprof
+
+# Gradle
+/build/
+/*/build/
+/captures/
+.gradle/
+
+# Keystore files
+*.jks
+*.keystore
+
+# Sign-in credentials (если вдруг случайно сохраняешь)
+*.key
+*.pem
+
+# Kotlin specific
+*.kotlin_module
+
+# Firebase
+google-services.json
+firebase-debug.log
+
+# Jetpack Compose
+.compose-cache/
+.kotlinc/
+
+# Generated files
+/buildSrc/.gradle/
+.cxx/
+*.apk
+*.ap_
+*.aab
+
+# Misc
+.DS_Store
+*.orig
+*.rej
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini

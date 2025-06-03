@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/workoutsFragment"
+        android:title="Тренировки" />
+
+    <item
+        android:id="@+id/firstFragment"
+        android:title="Заглушка 1" />
+
+    <item
+        android:id="@+id/secondFragment"
+        android:title="Заглушка 2" />
+
+</menu>

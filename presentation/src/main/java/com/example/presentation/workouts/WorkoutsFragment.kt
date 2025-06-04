@@ -1,9 +1,11 @@
 package com.example.presentation.workouts
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.presentation.databinding.FragmentWorkoutsBinding
@@ -11,6 +13,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.findNavController
 
@@ -38,38 +42,48 @@ class WorkoutsFragment : Fragment() {
 
         adapter = WorkoutAdapter { workout ->
             val action = WorkoutsFragmentDirections
-                .actionWorkoutsFragmentToVideoFragment(workout.id)
+                .actionWorkoutsFragmentToVideoFragment(
+                    id = workout.id,
+                    title = workout.title,
+                    description = workout.description ?: "Error",
+                    duration = workout.duration
+                )
             findNavController().navigate(action)
+
         }
 
         binding.recyclerView.adapter = adapter
 
-        observeViewModel()
+        setupObservers()
     }
 
-    private fun observeViewModel() {
-        lifecycleScope.launch {
-            viewModel.state.collectLatest { state ->
-                when (state) {
-                    is WorkoutsState.Loading -> {
-                        binding.progressBar.visibility = View.VISIBLE
-                        binding.recyclerView.visibility = View.GONE
-                    }
-
-                    is WorkoutsState.Success -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.recyclerView.visibility = View.VISIBLE
-                        adapter.submitList(state.workouts)
-                    }
-
-                    is WorkoutsState.Error -> {
-                        binding.progressBar.visibility = View.GONE
-                        //todo обработать ошибку
+    private fun setupObservers() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect { state ->
+                    when (state) {
+                        is WorkoutsState.Loading -> {
+                            binding.swipeRefreshLayout.isRefreshing = true
+                        }
+                        is WorkoutsState.Success -> {
+                            binding.swipeRefreshLayout.isRefreshing = false
+                            Log.e("MFPWE","dasdad")
+                            adapter.submitList(state.workouts)
+                        }
+                        is WorkoutsState.Error -> {
+                            binding.swipeRefreshLayout.isRefreshing = false
+                            Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
         }
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.refreshWorkouts()
+        }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

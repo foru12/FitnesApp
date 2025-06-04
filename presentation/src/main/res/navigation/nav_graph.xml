@@ -21,6 +21,18 @@
             android:name="id"
             app:argType="integer" />
 
+        <argument
+            android:name="title"
+            app:argType="string" />
+
+        <argument
+            android:name="description"
+            app:argType="string" />
+
+        <argument
+            android:name="duration"
+            app:argType="string" />
+
     </fragment>
     <fragment
         android:id="@+id/firstFragment"

@@ -26,6 +26,8 @@ class WorkoutAdapter(
 
         fun bind(workout: Workout) {
             binding.textTitle.text = workout.title
+            binding.textDuration.text = "${workout.duration} мин"
+            binding.textDescription.text = workout.description
             binding.root.setOnClickListener { onItemClick(workout) }
         }
     }

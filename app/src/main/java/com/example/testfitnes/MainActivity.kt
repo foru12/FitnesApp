@@ -9,6 +9,8 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.presentation.network.NetworkConnectionLiveData
+import com.example.presentation.network.NoInternetFragment
 import com.example.testfitnes.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -16,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-
+    private lateinit var noInternetLiveData: NetworkConnectionLiveData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +28,28 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
-
         binding.bottomNav.setupWithNavController(navController)
+
+        checkNetwork()
+    }
+
+    private fun checkNetwork() {
+        noInternetLiveData = NetworkConnectionLiveData(this)
+
+        noInternetLiveData.observe(this) { isConnected ->
+            val fragmentManager = supportFragmentManager
+            val existing = fragmentManager.findFragmentByTag("no_internet")
+
+            if (!isConnected && existing == null && !fragmentManager.isStateSaved) {
+                fragmentManager.beginTransaction()
+                    .add(android.R.id.content, NoInternetFragment(), "no_internet")
+                    .commitNowAllowingStateLoss()
+            } else if (isConnected && existing != null) {
+                fragmentManager.beginTransaction()
+                    .remove(existing)
+                    .commitNowAllowingStateLoss()
+            }
+        }
     }
 }
+

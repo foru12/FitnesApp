@@ -31,4 +31,17 @@ class WorkoutsViewModel @Inject constructor(
             }
         }
     }
+
+    fun refreshWorkouts() {
+        viewModelScope.launch {
+            _state.value = WorkoutsState.Loading
+            when (val result = getWorkoutsUseCase()) {
+                is ResultState.Success -> _state.value = WorkoutsState.Success(result.data)
+                is ResultState.Error -> _state.value = WorkoutsState.Error(result.message)
+                else -> {}
+            }
+        }
+    }
+
+
 }

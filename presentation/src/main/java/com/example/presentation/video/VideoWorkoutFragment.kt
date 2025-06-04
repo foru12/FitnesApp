@@ -14,6 +14,11 @@ import androidx.navigation.fragment.navArgs
 import com.example.presentation.databinding.FragmentVideoWorkoutBinding
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Tracks
+import com.google.android.exoplayer2.source.TrackGroup
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.trackselection.TrackSelectionOverride
+import com.google.android.exoplayer2.ui.TrackSelectionDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -28,6 +33,9 @@ class VideoWorkoutFragment : Fragment() {
 
     private var player: ExoPlayer? = null
 
+    private lateinit var trackSelector: DefaultTrackSelector
+
+
     private val BASE_URL = "https://ref.test.kolsa.ru"
 
     override fun onCreateView(
@@ -41,7 +49,18 @@ class VideoWorkoutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupObserver()
+        setargs()
         viewModel.loadVideo(args.id)
+    }
+
+    private fun setargs() {
+
+        val args: VideoWorkoutFragmentArgs by navArgs()
+
+        binding.tvTitle.text = args.title
+        binding.tvDescription.text = args.description
+        binding.tvDuration.text = "Длительность: ${args.duration} мин"
+
     }
 
     private fun setupObserver() {
@@ -67,27 +86,47 @@ class VideoWorkoutFragment : Fragment() {
 
             is VideoWorkoutState.Success -> {
                 binding.progressBar.visibility = View.GONE
-
-                val workout = state.data
-                binding.tvTitle.text = "Тренировка #${workout.id}"
-                binding.tvDuration.text = "Длительность: ${workout.duration} минут"
-                binding.tvDescription.text = "Описание недоступно"
-
-                setupExoPlayer(workout.link)
+                setupExoPlayer(state.data.link)
             }
         }
     }
 
 
     private fun setupExoPlayer(videoUrl: String) {
-        player = ExoPlayer.Builder(requireContext()).build().also { exoPlayer ->
-            binding.playerView.player = exoPlayer
-            val fullUrl = "$BASE_URL$videoUrl"
-            val mediaItem = MediaItem.fromUri(fullUrl)
-            exoPlayer.setMediaItem(mediaItem)
-            exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
+        trackSelector = DefaultTrackSelector(requireContext()).apply {
+            setParameters(buildUponParameters().setMaxVideoSizeSd())
         }
+
+        player = ExoPlayer.Builder(requireContext())
+            .setTrackSelector(trackSelector)
+            .build()
+
+        binding.playerView.player = player
+
+        val mediaItem = MediaItem.fromUri(BASE_URL + videoUrl)
+        player?.setMediaItem(mediaItem)
+        player?.prepare()
+        player?.playWhenReady = true
+
+        binding.btnQuality.setOnClickListener {
+            val tracks = player?.currentTracks
+            val trackGroups = mutableListOf<Tracks.Group>()
+            if (tracks != null){
+                for (i in 0 until tracks.groups.size) {
+                    trackGroups.add(tracks.groups[i])
+                }
+
+                val dialog = TrackSelectionDialogBuilder(
+                    requireContext(),
+                    "Выбор качества",
+                    trackGroups
+                ) { isDisabled, overrides -> }.build()
+
+                dialog.show()
+            }
+
+        }
+
     }
 
     override fun onStop() {

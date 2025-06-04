@@ -8,9 +8,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    env:
-      JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
-      ANDROID_SDK_ROOT: /usr/local/android-sdk
 
     steps:
       - name: Checkout repository
@@ -22,16 +19,14 @@ jobs:
           distribution: temurin
           java-version: "11"
 
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v2
+      - name: Set up Android SDK
+        uses: actions/setup-android@v4
         with:
           api-level: 34
           build-tools: "34.0.0"
           components: |
             platform-tools
             platforms;android-34
-            tools
-          cache: true
 
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses
@@ -41,5 +36,3 @@ jobs:
 
       - name: Build and run all unit tests
         run: ./gradlew clean test
-
-

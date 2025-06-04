@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="workout_type_filter">
+        <item>Все</item>
+        <item>TRAINING</item>
+        <item>LIVE</item>
+        <item>COMPLEX</item>
+    </string-array>
+</resources>

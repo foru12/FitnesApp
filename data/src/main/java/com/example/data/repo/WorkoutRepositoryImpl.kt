@@ -16,15 +16,34 @@ class WorkoutRepositoryImpl @Inject constructor(
 
     override suspend fun getWorkouts(): ResultState<List<Workout>> {
         return when (val response = remoteDataSource.getWorkouts()) {
-            is ApiResponse.Success -> ResultState.Success(response.data)
-            is ApiResponse.Error -> ResultState.Error(response.exception.toString())
+            is ApiResponse.Success -> {
+                ResultState.Success(response.data)
+            }
+            is ApiResponse.Error -> {
+                val ex = response.exception
+                val message = if (ex.code != null) {
+                    "Сервер вернул ошибку ${ex.code}: ${ex.message}"
+                } else {
+                    "Ошибка сети: ${ex.message}"
+                }
+                ResultState.Error(message)
+            }
         }
     }
 
     override suspend fun getVideoWorkout(id: Int): ResultState<VideoWorkout> {
         return when (val response = remoteDataSource.getVideoWorkout(id)) {
             is ApiResponse.Success -> ResultState.Success(response.data)
-            is ApiResponse.Error -> ResultState.Error(response.exception.toString())
+            is ApiResponse.Error -> {
+                val ex = response.exception
+                val message = if (ex.code != null) {
+                    "Сервер вернул ошибку ${ex.code}: ${ex.message}"
+                } else {
+                    "Ошибка сети: ${ex.message}"
+                }
+                ResultState.Error(message)
+            }
         }
     }
 }
+

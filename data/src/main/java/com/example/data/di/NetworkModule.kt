@@ -1,5 +1,6 @@
 package com.example.data.di
 
+import com.example.data.BuildConfig
 import com.example.data.api.helper.ApiHelper
 import com.example.data.api.helper.ApiHelperImpl
 import com.example.data.api.service.FitnessApiService
@@ -11,6 +12,8 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -19,21 +22,31 @@ object NetworkModule {
 
 
     @Provides
-    fun provideBaseUrl() = "http://ref.test.kolsa.ru/"
+    @Named("BASE_URL")
+    fun provideBaseUrl() = "https://ref.test.kolsa.ru/"
 
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient =
-        OkHttpClient.Builder()
-            .addInterceptor(HttpLoggingInterceptor().apply {
+    fun provideOkHttpClient(): OkHttpClient {
+        val builder = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+
+        if (BuildConfig.DEBUG) {
+            val logging = HttpLoggingInterceptor().apply {
                 setLevel(HttpLoggingInterceptor.Level.BODY)
-            })
-            .build()
+            }
+            builder.addInterceptor(logging)
+        }
+
+        return builder.build()
+    }
 
     @Provides
     @Singleton
-    fun provideRetrofit(client: OkHttpClient, baseUrl: String): Retrofit =
+    fun provideRetrofit(client: OkHttpClient, @Named("BASE_URL") baseUrl: String): Retrofit =
         Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(client)

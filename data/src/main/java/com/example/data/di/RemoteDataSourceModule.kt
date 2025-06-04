@@ -9,14 +9,15 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RemoteDataSourceModule {
+abstract class RemoteDataSourceModule {
 
-    @Provides
-    fun provideWorkoutRemoteDataSource(
-        apiService: FitnessApiService,
-        apiHelper: ApiHelper
-    ): WorkoutRemoteDataSource = WorkoutRemoteDataSourceImpl(apiService, apiHelper)
+    @Binds
+    @Singleton
+    abstract fun bindWorkoutRemoteDataSource(
+        impl: WorkoutRemoteDataSourceImpl
+    ): WorkoutRemoteDataSource
 }

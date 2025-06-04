@@ -20,8 +20,8 @@ class WorkoutRemoteDataSourceImpl @Inject constructor(
         apiHelper.safeApiCall {
             val response = apiService.getWorkouts()
             if (response.isSuccessful) {
-                response.body()?.map { it.toDomain() }
-                    ?: throw ApiException(response.code(), "Пустой ответ от сервера")
+                val bodyList = response.body()
+                bodyList?.map { it.toDomain() } ?: emptyList()
             } else {
                 throw ApiException(response.code(), response.message())
             }

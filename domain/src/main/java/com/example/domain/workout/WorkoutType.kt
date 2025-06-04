@@ -6,6 +6,7 @@ enum class WorkoutType(val code: Int) {
     COMPLEX(3);
 
     companion object {
-        fun fromCode(code: Int): WorkoutType = entries.first { it.code == code }
+        fun fromCode(code: Int): WorkoutType =
+            entries.find { it.code == code } ?: TRAINING
     }
 }

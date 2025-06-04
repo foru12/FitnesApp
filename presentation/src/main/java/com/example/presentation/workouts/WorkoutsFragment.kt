@@ -1,23 +1,22 @@
 package com.example.presentation.workouts
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.ArrayAdapter
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.example.presentation.databinding.FragmentWorkoutsBinding
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.findNavController
-
+import com.example.domain.workout.WorkoutType
+import com.example.presentation.R
+import com.example.presentation.databinding.FragmentWorkoutsBinding
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class WorkoutsFragment : Fragment() {
@@ -29,8 +28,7 @@ class WorkoutsFragment : Fragment() {
     private lateinit var adapter: WorkoutAdapter
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentWorkoutsBinding.inflate(inflater, container, false)
@@ -45,45 +43,101 @@ class WorkoutsFragment : Fragment() {
                 .actionWorkoutsFragmentToVideoFragment(
                     id = workout.id,
                     title = workout.title,
-                    description = workout.description ?: "Error",
+                    description = workout.description ?: "Нет описания",
                     duration = workout.duration
                 )
             findNavController().navigate(action)
-
         }
-
         binding.recyclerView.adapter = adapter
 
-        setupObservers()
-    }
-
-    private fun setupObservers() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.state.collect { state ->
-                    when (state) {
-                        is WorkoutsState.Loading -> {
-                            binding.swipeRefreshLayout.isRefreshing = true
-                        }
-                        is WorkoutsState.Success -> {
-                            binding.swipeRefreshLayout.isRefreshing = false
-                            Log.e("MFPWE","dasdad")
-                            adapter.submitList(state.workouts)
-                        }
-                        is WorkoutsState.Error -> {
-                            binding.swipeRefreshLayout.isRefreshing = false
-                            Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            }
-        }
+        setupSearchView()
+        setupTypeSpinner()
+        observeViewModel()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.refreshWorkouts()
         }
     }
 
+    private fun setupSearchView() {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                viewModel.setQuery(query ?: "")
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.setQuery(newText ?: "")
+                return true
+            }
+        })
+    }
+
+    private fun setupTypeSpinner() {
+        val spinnerOptions: List<WorkoutType?> = listOf(null) + WorkoutType.values().toList()
+        val labels = spinnerOptions.map {
+            it?.name ?: getString(R.string.all_types)
+        }
+        val arrayAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            labels
+        ).also {
+            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.spinnerType.adapter = it
+        }
+
+        binding.spinnerType.onItemSelectedListener = object :
+            android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: android.widget.AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                viewModel.setType(spinnerOptions[position])
+            }
+
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {
+                viewModel.setType(null)
+            }
+        }
+    }
+
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.isLoading.collect { loading ->
+                        binding.swipeRefreshLayout.isRefreshing = loading
+                    }
+                }
+
+                launch {
+                    viewModel.errorMessage.collect { error ->
+                        if (error != null) {
+                            binding.txtMessage.visibility = View.VISIBLE
+                            binding.txtMessage.text = error
+                            binding.recyclerView.visibility = View.GONE
+                        }
+                    }
+                }
+                launch {
+                    viewModel.filteredWorkouts.collect { list ->
+                        if (list.isEmpty()) {
+                            binding.recyclerView.visibility = View.GONE
+                            binding.txtMessage.visibility = View.VISIBLE
+                            binding.txtMessage.text = "Тренировок пока нет"
+                        } else {
+                            binding.txtMessage.visibility = View.GONE
+                            binding.recyclerView.visibility = View.VISIBLE
+                            adapter.submitList(list)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

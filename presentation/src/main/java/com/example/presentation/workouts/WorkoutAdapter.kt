@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.domain.workout.Workout
+import com.example.domain.workout.WorkoutType
 import com.example.presentation.databinding.ItemWorkoutBinding
 
 class WorkoutAdapter(
@@ -26,6 +27,12 @@ class WorkoutAdapter(
 
         fun bind(workout: Workout) {
             binding.textTitle.text = workout.title
+            val typeText = when (workout.type) {
+                WorkoutType.TRAINING -> "Training"
+                WorkoutType.LIVE     -> "Live"
+                WorkoutType.COMPLEX  -> "Complex"
+            }
+            binding.textType.text = typeText
             binding.textDuration.text = "${workout.duration} мин"
             binding.textDescription.text = workout.description
             binding.root.setOnClickListener { onItemClick(workout) }

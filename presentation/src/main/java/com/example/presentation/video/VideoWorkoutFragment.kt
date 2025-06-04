@@ -1,27 +1,33 @@
 package com.example.presentation.video
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.TrackGroup
+import androidx.media3.common.TrackSelectionOverride
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import androidx.media3.ui.TrackSelectionDialogBuilder
+import com.example.presentation.R
 import com.example.presentation.databinding.FragmentVideoWorkoutBinding
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Tracks
-import com.google.android.exoplayer2.source.TrackGroup
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.trackselection.TrackSelectionOverride
-import com.google.android.exoplayer2.ui.TrackSelectionDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+
+@UnstableApi
 @AndroidEntryPoint
 class VideoWorkoutFragment : Fragment() {
 
@@ -32,9 +38,7 @@ class VideoWorkoutFragment : Fragment() {
     private val args: VideoWorkoutFragmentArgs by navArgs()
 
     private var player: ExoPlayer? = null
-
     private lateinit var trackSelector: DefaultTrackSelector
-
 
     private val BASE_URL = "https://ref.test.kolsa.ru"
 
@@ -48,27 +52,21 @@ class VideoWorkoutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupObserver()
         setargs()
+        setupObserver()
         viewModel.loadVideo(args.id)
     }
 
     private fun setargs() {
-
-        val args: VideoWorkoutFragmentArgs by navArgs()
-
         binding.tvTitle.text = args.title
         binding.tvDescription.text = args.description
         binding.tvDuration.text = "Длительность: ${args.duration} мин"
-
     }
 
     private fun setupObserver() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    renderState(state)
-                }
+                viewModel.uiState.collect { state -> renderState(state) }
             }
         }
     }
@@ -76,25 +74,22 @@ class VideoWorkoutFragment : Fragment() {
     private fun renderState(state: VideoWorkoutState) {
         when (state) {
             is VideoWorkoutState.Loading -> {
-                binding.progressBar.visibility = View.VISIBLE
+                // можно добавить лоадер
             }
 
             is VideoWorkoutState.Error -> {
-                binding.progressBar.visibility = View.GONE
                 Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
             }
 
             is VideoWorkoutState.Success -> {
-                binding.progressBar.visibility = View.GONE
                 setupExoPlayer(state.data.link)
             }
         }
     }
 
-
     private fun setupExoPlayer(videoUrl: String) {
         trackSelector = DefaultTrackSelector(requireContext()).apply {
-            setParameters(buildUponParameters().setMaxVideoSizeSd())
+            setParameters(buildUponParameters())
         }
 
         player = ExoPlayer.Builder(requireContext())
@@ -102,32 +97,40 @@ class VideoWorkoutFragment : Fragment() {
             .build()
 
         binding.playerView.player = player
+        binding.playerView.setUseController(true)
+        binding.playerView.setControllerAutoShow(true)
+        binding.playerView.setControllerShowTimeoutMs(1000)
+
+        // Кнопка выбора качества
+        val qualityButton = binding.playerView.findViewById<View>(R.id.exo_quality)
+        qualityButton?.setOnClickListener {
+            val tracks = player?.currentTracks ?: return@setOnClickListener
+            val videoTrackGroups = tracks.groups.filter { it.type == C.TRACK_TYPE_VIDEO }
+
+            if (videoTrackGroups.isNotEmpty()) {
+                TrackSelectionDialogBuilder(
+                    requireContext(),
+                    "Выбор качества",
+                    videoTrackGroups
+                ) { isDisabled, overrides ->
+                    trackSelector.setParameters(
+                        trackSelector.parameters
+                            .buildUpon()
+                            .setRendererDisabled(0, isDisabled)
+                            .build()
+                    )
+
+                }.build().show()
+            }
+        }
 
         val mediaItem = MediaItem.fromUri(BASE_URL + videoUrl)
         player?.setMediaItem(mediaItem)
         player?.prepare()
         player?.playWhenReady = true
-
-        binding.btnQuality.setOnClickListener {
-            val tracks = player?.currentTracks
-            val trackGroups = mutableListOf<Tracks.Group>()
-            if (tracks != null){
-                for (i in 0 until tracks.groups.size) {
-                    trackGroups.add(tracks.groups[i])
-                }
-
-                val dialog = TrackSelectionDialogBuilder(
-                    requireContext(),
-                    "Выбор качества",
-                    trackGroups
-                ) { isDisabled, overrides -> }.build()
-
-                dialog.show()
-            }
-
-        }
-
     }
+
+
 
     override fun onStop() {
         super.onStop()

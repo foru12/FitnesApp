@@ -3,14 +3,17 @@
 
     <item
         android:id="@+id/workoutsFragment"
+        android:icon="@drawable/workouts_ic"
         android:title="Тренировки" />
 
     <item
         android:id="@+id/firstFragment"
+        android:icon="@drawable/health_ic"
         android:title="Заглушка 1" />
 
     <item
         android:id="@+id/secondFragment"
+        android:icon="@drawable/body_ic"
         android:title="Заглушка 2" />
 
 </menu>

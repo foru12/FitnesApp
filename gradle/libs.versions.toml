@@ -18,7 +18,8 @@ gson = "2.12.1"
 loggingInterceptor = "4.12.0"
 
 exoplayer = "2.19.1"
-exoui = "2.19.0"
+media3 = "1.7.1"
+
 coroutines = "1.7.3"
 hilt = "2.50"
 
@@ -52,9 +53,8 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "loggingInterceptor" }
 
 # Media
-exoplayer = { group = "com.google.android.exoplayer", name = "exoplayer", version.ref = "exoplayer" }
-exo-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "exoui" }
-
+media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
+media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 # Coroutines
 coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 

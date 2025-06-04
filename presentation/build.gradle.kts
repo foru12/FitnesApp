@@ -48,7 +48,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.appcompat)
-    implementation(libs.exoplayer)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
 
 
 

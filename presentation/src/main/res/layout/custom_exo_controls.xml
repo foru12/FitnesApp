@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/exo_controller"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#4D000000"
+    android:padding="12dp">
+
+    <ImageButton
+        android:id="@+id/exo_quality"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="12dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
+        android:src="@drawable/video_q_ic" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom"
+        android:gravity="center_horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/exo_rew"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Rewind"
+                android:scaleType="centerInside"
+                android:src="@drawable/exo_icon_rewind" />
+
+            <ImageButton
+                android:id="@+id/exo_play_pause"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Play/Pause"
+                android:scaleType="centerInside"
+                android:src="@drawable/exo_icon_play" />
+
+            <ImageButton
+                android:id="@+id/exo_ffwd"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Fast forward"
+                android:scaleType="centerInside"
+                android:src="@drawable/exo_icon_fastforward" />
+
+
+
+
+        </LinearLayout>
+
+        <androidx.media3.ui.DefaultTimeBar
+            android:id="@+id/exo_progress"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginBottom="8dp"
+            android:layout_gravity="center_horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            app:played_color="@android:color/white"
+            app:scrubber_color="@android:color/white"
+            app:buffered_color="#66FFFFFF"
+            app:unplayed_color="#33FFFFFF"
+            app:ad_marker_color="#FF0000" />
+
+    </LinearLayout>
+</FrameLayout>

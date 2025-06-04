@@ -1,9 +1,9 @@
 # .github/workflows/ci.yml
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-test:
@@ -34,8 +34,7 @@ jobs:
           cache: true
 
       - name: Accept Android SDK licenses
-        run: |
-          yes | sdkmanager --licenses
+        run: yes | sdkmanager --licenses
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -43,11 +42,4 @@ jobs:
       - name: Build and run all unit tests
         run: ./gradlew clean test
 
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: junit-results
-          path: |
-            **/build/test-results/*.xml
-            **/build/reports/tests/**/*.html
+
